@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>圖書管理系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-router/4.2.4/vue-router.global.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.router-link-active {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .book-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .book-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-author {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .book-category {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 0.2rem 0.5rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .book-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .book-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
+        .btn-danger {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .search-bar select {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .book-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <nav>
+                <div class="logo">📚 圖書管理系統</div>
+                <ul class="nav-links">
+                    <li><router-link to="/">首頁</router-link></li>
+                    <li><router-link to="/books">圖書列表</router-link></li>
+                    <li><router-link to="/add-book">新增圖書</router-link></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="container">
+            <router-view></router-view>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+        const { createRouter, createWebHashHistory } = VueRouter;
+
+        // 書籍數據管理
+        const useBooks = () => {
+            const books = ref([
+                {
+                    id: 1,
+                    title: '三國演義',
+                    author: '羅貫中',
+                    category: '古典文學',
+                    description: '中國古典四大名著之一，描述三國時期的歷史故事。',
+                    publishYear: 1400,
+                    isbn: '9787020002207'
+                },
+                {
+                    id: 2,
+                    title: '哈利波特：神秘的魔法石',
+                    author: 'J.K.羅琳',
+                    category: '奇幻小說',
+                    description: '一個關於魔法世界的精彩冒險故事。',
+                    publishYear: 1997,
+                    isbn: '9780747532699'
+                },
+                {
+                    id: 3,
+                    title: '資料結構與演算法',
+                    author: '張三',
+                    category: '電腦科學',
+                    description: '深入淺出地介紹各種資料結構和演算法。',
+                    publishYear: 2020,
+                    isbn: '9787111234567'
+                }
+            ]);
+
+            const addBook = (book) => {
+                const newBook = {
+                    ...book,
+                    id: Date.now()
+                };
+                books.value.push(newBook);
+            };
+
+            const updateBook = (id, updatedBook) => {
+                const index = books.value.findIndex(book => book.id === id);
+                if (index !== -1) {
+                    books.value[index] = { ...updatedBook, id };
+                }
+            };
+
+            const deleteBook = (id) => {
+                const index = books.value.findIndex(book => book.id === id);
+                if (index !== -1) {
+                    books.value.splice(index, 1);
+                }
+            };
+
+            const getBookById = (id) => {
+                return books.value.find(book => book.id === id);
+            };
+
+            return {
+                books,
+                addBook,
+                updateBook,
+                deleteBook,
+                getBookById
+            };
+        };
+
+        // 全局書籍狀態
+        const bookStore = useBooks();
+
+        // 首頁組件
+        const Home = {
+            template: `
+                <div>
+                    <div class="card">
+                        <h1>歡迎來到圖書管理系統</h1>
+                        <p>這是一個使用 Vue.js 3 和 Vue Router 建立的簡單圖書管理系統。</p>
+                        <br>
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                            <router-link to="/books" class="btn btn-primary">瀏覽圖書</router-link>
+                            <router-link to="/add-book" class="btn btn-success">新增圖書</router-link>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2>系統統計</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                            <div style="background: #e3f2fd; padding: 1rem; border-radius: 5px; text-align: center;">
+                                <h3 style="color: #1976d2; margin-bottom: 0.5rem;">總書籍數</h3>
+                                <div style="font-size: 2rem; font-weight: bold; color: #1976d2;">{{ totalBooks }}</div>
+                            </div>
+                            <div style="background: #e8f5e8; padding: 1rem; border-radius: 5px; text-align: center;">
+                                <h3 style="color: #2e7d32; margin-bottom: 0.5rem;">分類數量</h3>
+                                <div style="font-size: 2rem; font-weight: bold; color: #2e7d32;">{{ totalCategories }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const totalBooks = computed(() => bookStore.books.value.length);
+                const totalCategories = computed(() => {
+                    const categories = new Set(bookStore.books.value.map(book => book.category));
+                    return categories.size;
+                });
+
+                return {
+                    totalBooks,
+                    totalCategories
+                };
+            }
+        };
+
+        // 圖書列表組件
+        const BookList = {
+            template: `
+                <div>
+                    <div class="card">
+                        <h1>圖書列表</h1>
+                        
+                        <div class="search-bar">
+                            <input 
+                                v-model="searchQuery" 
+                                placeholder="搜尋書名或作者..."
+                                type="text"
+                            >
+                            <select v-model="selectedCategory">
+                                <option value="">所有分類</option>
+                                <option v-for="category in categories" :key="category" :value="category">
+                                    {{ category }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div v-if="filteredBooks.length === 0" class="empty-state">
+                        <h3>沒有找到相關圖書</h3>
+                        <p>請嘗試調整搜尋條件或新增一本書</p>
+                        <router-link to="/add-book" class="btn btn-primary" style="margin-top: 1rem;">新增圖書</router-link>
+                    </div>
+
+                    <div v-else class="book-grid">
+                        <div v-for="book in filteredBooks" :key="book.id" class="book-card">
+                            <div class="book-title">{{ book.title }}</div>
+                            <div class="book-author">作者：{{ book.author }}</div>
+                            <div class="book-category">{{ book.category }}</div>
+                            <div class="book-description">{{ book.description }}</div>
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">
+                                <div>出版年份：{{ book.publishYear }}</div>
+                                <div>ISBN：{{ book.isbn }}</div>
+                            </div>
+                            <div class="book-actions">
+                                <router-link :to="'/edit-book/' + book.id" class="btn btn-primary">編輯</router-link>
+                                <button @click="deleteBook(book.id)" class="btn btn-danger">刪除</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const searchQuery = ref('');
+                const selectedCategory = ref('');
+
+                const categories = computed(() => {
+                    return [...new Set(bookStore.books.value.map(book => book.category))];
+                });
+
+                const filteredBooks = computed(() => {
+                    let filtered = bookStore.books.value;
+
+                    if (searchQuery.value) {
+                        const query = searchQuery.value.toLowerCase();
+                        filtered = filtered.filter(book => 
+                            book.title.toLowerCase().includes(query) ||
+                            book.author.toLowerCase().includes(query)
+                        );
+                    }
+
+                    if (selectedCategory.value) {
+                        filtered = filtered.filter(book => book.category === selectedCategory.value);
+                    }
+
+                    return filtered;
+                });
+
+                const deleteBook = (id) => {
+                    if (confirm('確定要刪除這本書嗎？')) {
+                        bookStore.deleteBook(id);
+                    }
+                };
+
+                return {
+                    searchQuery,
+                    selectedCategory,
+                    categories,
+                    filteredBooks,
+                    deleteBook
+                };
+            }
+        };
+
+        // 新增圖書組件
+        const AddBook = {
+            template: `
+                <div class="card">
+                    <h1>新增圖書</h1>
+                    
+                    <form @submit.prevent="submitForm">
+                        <div class="form-group">
+                            <label>書名</label>
+                            <input v-model="form.title" type="text" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>作者</label>
+                            <input v-model="form.author" type="text" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>分類</label>
+                            <select v-model="form.category" required>
+                                <option value="">請選擇分類</option>
+                                <option value="古典文學">古典文學</option>
+                                <option value="現代文學">現代文學</option>
+                                <option value="奇幻小說">奇幻小說</option>
+                                <option value="科幻小說">科幻小說</option>
+                                <option value="電腦科學">電腦科學</option>
+                                <option value="歷史">歷史</option>
+                                <option value="傳記">傳記</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>描述</label>
+                            <textarea v-model="form.description" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>出版年份</label>
+                            <input v-model.number="form.publishYear" type="number" min="1000" max="2030" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ISBN</label>
+                            <input v-model="form.isbn" type="text" required>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-success">新增圖書</button>
+                            <router-link to="/books" class="btn btn-primary">返回列表</router-link>
+                        </div>
+                    </form>
+                </div>
+            `,
+            setup() {
+                const router = VueRouter.useRouter();
+                
+                const form = ref({
+                    title: '',
+                    author: '',
+                    category: '',
+                    description: '',
+                    publishYear: new Date().getFullYear(),
+                    isbn: ''
+                });
+
+                const submitForm = () => {
+                    bookStore.addBook(form.value);
+                    alert('圖書新增成功！');
+                    router.push('/books');
+                };
+
+                return {
+                    form,
+                    submitForm
+                };
+            }
+        };
+
+        // 編輯圖書組件
+        const EditBook = {
+            template: `
+                <div class="card">
+                    <h1>編輯圖書</h1>
+                    
+                    <form @submit.prevent="submitForm" v-if="form">
+                        <div class="form-group">
+                            <label>書名</label>
+                            <input v-model="form.title" type="text" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>作者</label>
+                            <input v-model="form.author" type="text" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>分類</label>
+                            <select v-model="form.category" required>
+                                <option value="">請選擇分類</option>
+                                <option value="古典文學">古典文學</option>
+                                <option value="現代文學">現代文學</option>
+                                <option value="奇幻小說">奇幻小說</option>
+                                <option value="科幻小說">科幻小說</option>
+                                <option value="電腦科學">電腦科學</option>
+                                <option value="歷史">歷史</option>
+                                <option value="傳記">傳記</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>描述</label>
+                            <textarea v-model="form.description" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>出版年份</label>
+                            <input v-model.number="form.publishYear" type="number" min="1000" max="2030" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ISBN</label>
+                            <input v-model="form.isbn" type="text" required>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button type="submit" class="btn btn-success">更新圖書</button>
+                            <router-link to="/books" class="btn btn-primary">返回列表</router-link>
+                        </div>
+                    </form>
+                    
+                    <div v-else>
+                        <p>找不到該圖書</p>
+                        <router-link to="/books" class="btn btn-primary">返回列表</router-link>
+                    </div>
+                </div>
+            `,
+            setup() {
+                const route = VueRouter.useRoute();
+                const router = VueRouter.useRouter();
+                const form = ref(null);
+
+                onMounted(() => {
+                    const bookId = parseInt(route.params.id);
+                    const book = bookStore.getBookById(bookId);
+                    if (book) {
+                        form.value = { ...book };
+                    }
+                });
+
+                const submitForm = () => {
+                    if (form.value) {
+                        bookStore.updateBook(form.value.id, form.value);
+                        alert('圖書更新成功！');
+                        router.push('/books');
+                    }
+                };
+
+                return {
+                    form,
+                    submitForm
+                };
+            }
+        };
+
+        // 路由設定
+        const routes = [
+            { path: '/', component: Home },
+            { path: '/books', component: BookList },
+            { path: '/add-book', component: AddBook },
+            { path: '/edit-book/:id', component: EditBook }
+        ];
+
+        const router = createRouter({
+            history: createWebHashHistory(),
+            routes
+        });
+
+        // 創建應用
+        const app = createApp({});
+        app.use(router);
+        app.mount('#app');
+    </script>
+</body>
+</html>
